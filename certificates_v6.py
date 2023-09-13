@@ -49,8 +49,10 @@ def get_layers(model):
     return model.layers
 
 class NotLipschtzLayerError(Exception):
+    """Raise for my specific kind of exception"""
     pass
 class BadLastLayerError(Exception):
+    """Raise for my specific kind of exception"""
     pass
 
 def check_is_Lipschitz(layers):
@@ -70,6 +72,7 @@ def check_is_Lipschitz(layers):
         elif layer.__class__.__name__ in GLOBAL_CONSTANTS["not_Lipschitz"]:
             # triggers when using none Lipschitz layers such as "batch_normalization"
             raise NotLipschtzLayerError("The layer '%s' is not supported" %layer.name)
+            print("ok")
         elif any(layer.name.startswith(substring) for substring in GLOBAL_CONSTANTS["not_deel"]):
             #print("Layer %s not deel." %layer.name)
             logging.warning("A deel equivalent exists for  '%s'. For practical purposes, we will assume that the layer is 1-Lipschitz." %layer.name)
@@ -78,7 +81,6 @@ def check_is_Lipschitz(layers):
             logging.warning("The layer '%s' is not recommended. \
 For practical purposes, we recommend to use deel lip activation layer instead such as GroupSort2.\n" %(layer.name))
         else:
-            
             logging.warning("Unknown layer '%s' used. For practical purposes, we will assume that the layer is 1-Lipschitz." %layer.name)
 
 def check_activation_layer(layer):
