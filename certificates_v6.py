@@ -141,20 +141,24 @@ def get_K_(layers):
 def get_last_layer(model):
     return get_layers(model)[-1]
 
-def get_weights_last_layer(model, check=True):
+def get_weights_last_layer(model):
+    return get_last_layer(model).get_weights()[0]
+
+def check_last_layer(model):
     last_layer=get_last_layer(model)
 
-    if check:
-        # check last layer is a layer with weights
-        if not hasattr(last_layer,'get_weights'):
-             raise BadLastLayerError("The last layer '%s' must have a set of weights to calculate the certificate." %last_layer.name)
-        # check last layer has no activation function set
-        activation = getattr(last_layer, 'activation')
-        if activation!=GLOBAL_CONSTANTS["no_activation"]:
-            logging.warning("We recommend avoiding using an activation \
+
+    # check last layer is a layer with weights
+    if not hasattr(last_layer,'get_weights'):
+         raise BadLastLayerError("The last layer '%s' must have a set of weights to calculate the certificate." %last_layer.name)
+
+    if last_layer.get_weights()==[]:
+        raise BadLastLayerError("The last layer '%s' must have a set of weights to calculate the certificate." %last_layer.name)
+    # check last layer has no activation function set
+    activation = getattr(last_layer, 'activation')
+    if activation!=GLOBAL_CONSTANTS["no_activation"]:
+        logging.warning("We recommend avoiding using an activation \
 function for the last layer (here the '%s' activation function of the layer '%s').\n"%(activation,last_layer.name))
-    
-    return get_last_layer(model).get_weights()[0]
 
 def get_sorted_logits_indices(model_output):
     # Sort the model outputs model.predict(x)
@@ -162,7 +166,9 @@ def get_sorted_logits_indices(model_output):
     return sorted_indices
 
 def get_certificate(model,x):
+    check_last_layer(model)
     num_perceptron_last_layer = model.output_shape[1]
+    
     if num_perceptron_last_layer>=3:
         return get_certificate_multiclassification(model, x, num_classes = num_perceptron_last_layer)
     elif num_perceptron_last_layer==1:
@@ -183,7 +189,7 @@ def get_certificate_multiclassification(model, x, num_classes):
     model_output =  model.predict(x)
 
 
-    last_layer_weights =  get_weights_last_layer(model, False)
+    last_layer_weights =  get_weights_last_layer(model)
 
     
     K_n_minus_1 = get_K_(get_layers(model)[:-1])
