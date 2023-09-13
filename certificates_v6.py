@@ -125,11 +125,7 @@ For practical purposes, we recommend to use deel lip activation functions instea
 
 
 def get_K_(layers):
-    try:
-        check_is_Lipschitz(layers)
-    except NotLipschtzLayerError as e:
-        print("NotLipschtzLayerError raised:", e)
-        return None
+    check_is_Lipschitz(layers)
     
     K_ = 1
     # Print information about each layer
